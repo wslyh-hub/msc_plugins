@@ -12,7 +12,7 @@ using HarmonyLib;
 
 namespace Mcs_Refresh_NpcLove
 {
-    [BepInPlugin("wslyh","msc_refresh_npclove","1.0.0")]
+    [BepInPlugin("wslyh","msc_refresh_npclove","1.0.1")]
     public class MscPluginNpcLove : BaseUnityPlugin
     {
         void Start()
@@ -63,7 +63,7 @@ namespace Mcs_Refresh_NpcLove
         }
     
         [HarmonyPostfix, HarmonyPatch(typeof(JiaoYi.JiaoYiUIMag), "InitNpcData")]
-        private static void JiaoYiUIMag_Awake_Patch()
+        private static void JiaoYiUIMag_InitNpcData_Patch()
         {
             JiaoYi.NpcLove curr_npc = JiaoYi.JiaoYiUIMag.Inst.GetComponentInChildren<JiaoYi.NpcLove>();
             if (curr_npc != null)
@@ -71,6 +71,32 @@ namespace Mcs_Refresh_NpcLove
                 add_click(curr_npc);
             }
            
+        }
+
+
+        [HarmonyPostfix, HarmonyPatch(typeof(UINPCZengLi), "Start")]
+        private static void UINPCJiaoHu_Start_Patch(UINPCZengLi __instance)
+        {
+                Image[] images = __instance.NPCXingQu.GetComponentsInChildren<Image>();
+
+                EventTrigger.Entry click = new EventTrigger.Entry
+                {
+                    eventID = EventTriggerType.PointerClick
+                };
+
+                click.callback.AddListener(delegate (BaseEventData data)
+                {
+                    UINPCData curr_npc = UINPCJiaoHu.Inst.NowJiaoHuNPC;
+                    int npc_id = curr_npc.ID;
+                    jsonData.instance.MonstarCreatInterstingType(npc_id);
+                    __instance.NPCXingQu.RefreshUI();
+                });
+
+                for (int i = 0; i < 2; i++)
+                {
+                    images[i].gameObject.AddComponent<EventTrigger>().triggers.Add(click); 
+                }
+
         }
     }
 }
