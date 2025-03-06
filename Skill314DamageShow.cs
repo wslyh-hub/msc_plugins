@@ -33,25 +33,32 @@ namespace Msc_Fight_Info
             return (buffcount * 2 - (limit + 1) * 5) * limit / 2 + limit * skill_damage;
         }
 
+        private static void Show_Skill314_Damage(YSGame.Fight.UIFightSkillTip __instance, GUIPackage.Skill skill)
+        {
+            KBEngine.Avatar player = PlayerEx.Player;
+            int yan_huayan_buff_sum = player.buffmag.GetBuffSum(23) + player.buffmag.GetBuffSum(19);
+            int skill_damage = JSONClass._skillJsonData.DataDict[skill.skill_ID].HP;
+
+            int lingqi_sum = 0; for (int i = 0; i < 6; i++) lingqi_sum += PlayerEx.Player.cardMag[i];
+
+            int limit = yan_huayan_buff_sum / 5; limit = limit > lingqi_sum ? lingqi_sum : limit;
+
+            int damage = Calc_Skill314_Damage(yan_huayan_buff_sum, limit, skill_damage);
+
+            __instance.SkillNameText.text = __instance.SkillNameText.text + " 面板伤害" + "(" + limit + "):" + damage;
+        }
+
         [HarmonyPostfix, HarmonyPatch(typeof(YSGame.Fight.UIFightSkillTip), "SetSkill")]
         private static void UIFightSkillTip_SetSkill_Patch(YSGame.Fight.UIFightSkillTip __instance, GUIPackage.Skill skill)
         {
 
-            if (skill.SkillID == 314)
+            switch (skill.SkillID)
             {
+                case 314:
+                    Show_Skill314_Damage(__instance, skill);
+                    break;
 
-                KBEngine.Avatar player = PlayerEx.Player;
-                int yan_huayan_buff_sum = player.buffmag.GetBuffSum(23) + player.buffmag.GetBuffSum(19);
-
-                int skill_damage = _skillJsonData.DataDict[skill.skill_ID].HP;
-
-                int lingqi_sum = 0; for (int i = 0; i < 6; i++) lingqi_sum += PlayerEx.Player.cardMag[i];
-
-                int limit = yan_huayan_buff_sum / 5; limit = limit > lingqi_sum ? lingqi_sum : limit;
-
-                int damage = Calc_Skill314_Damage(yan_huayan_buff_sum, limit, skill_damage);
-
-                __instance.SkillNameText.text = __instance.SkillNameText.text + "面板伤害"+"("+ limit + "):" + damage;
+                default: break;
             }
 
         }
